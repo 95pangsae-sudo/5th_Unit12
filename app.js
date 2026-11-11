@@ -430,7 +430,7 @@ if (typeof document !== "undefined") (function () {
           <button class="say card-say" title="문장 듣기">🔊</button>
           ${other.length ? `<span class="other">📌 ${other.join(", ")} 계획</span>` : ""}
         </div>
-        <button class="pick-btn${chosen ? " on" : ""}">${chosen ? `✔️ 골랐어요 · 다시 누르면 빼기` : `✅ ${Q[q].koAt} 할래요`}</button>
+        <button class="pick-btn${chosen ? " on" : ""}" title="${chosen ? "다시 누르면 계획에서 빠져요" : "지금 질문의 대답으로 골라요"}">${chosen ? `✔️ 골랐어요 (빼기)` : `✅ ${Q[q].koAt} 할래요`}</button>
       </article>`;
     }).join("") || `<p class="hint">이 질문에 맞는 카드가 없어요.</p>`;
   }
@@ -464,8 +464,8 @@ if (typeof document !== "undefined") (function () {
   function statLine(sentence, q) {
     const st = state.stats[sentence];
     if (!st || !st.count) return "아직 연습 기록이 없어요";
-    const now = state.lastResult[q] ? state.lastResult[q].score + "%" : "-";
-    return `이번 ${now} · 평균 ${Math.round(st.sum / st.count)}% · 최고 ${st.best}% · ${st.count}회`;
+    const now = state.lastResult[q] && state.lastResult[q].score != null ? `이번 ${state.lastResult[q].score}% · ` : "";
+    return `${now}평균 ${Math.round(st.sum / st.count)}% · 최고 ${st.best}% · ${st.count}회`;
   }
 
   function resultHTML(r) {
