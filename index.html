@@ -3,194 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Would you like some ___? · 음식 권하고 맛 말하기</title>
+  <title>What are you going to do? · 6학년 9단원</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍁</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" />
   <link rel="stylesheet" href="https://hangeul.pstatic.net/hangeul_static/css/nanum-square-round.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="app-header">
-    <div class="balloon balloon1">🍛</div>
-    <div class="balloon balloon2">🍦</div>
-    <div class="confetti"></div>
-    <h1>🍽️ Would you like some ___?</h1>
-    <p class="subtitle">음식 권하고 맛 말하기 · How's the food? It's ___. 😋</p>
+    <div class="leaves" aria-hidden="true"></div>
+    <h1><span class="en">What are you going to do?</span></h1>
+    <p class="subtitle">🍁 6학년 9단원 · 계획 묻고 답하기 · <span class="en">I'm going to ___.</span> 🍂</p>
   </header>
 
-  <nav class="tabs">
-    <button class="tab-btn active" data-tab="suggest">🍽️ 음식 권하기</button>
-    <button class="tab-btn" data-tab="answer">💬 대답하기</button>
-    <button class="tab-btn" data-tab="taste">😋 맛 말하기</button>
-    <button class="tab-btn" data-tab="build">🎒 내 식탁 만들기 <span id="set-count" class="tab-count">0/3</span></button>
-    <button class="tab-btn" data-tab="practice">🎤 연습 · 짝 활동</button>
+  <nav class="tabs" role="tablist">
+    <button class="tab-btn active" data-tab="basic" role="tab"><span class="long">🎨 활동 카드 (초급)</span><span class="short">초급 카드</span></button>
+    <button class="tab-btn" data-tab="mid" role="tab"><span class="long">🎨 활동 카드 (중급)</span><span class="short">중급 카드</span></button>
+    <button class="tab-btn" data-tab="practice" role="tab"><span class="long">🎤 연습하기</span><span class="short">연습하기</span> <span id="plan-count" class="tab-count">0/5</span></button>
   </nav>
 
-  <div class="toolbar">
-    <label class="speed-control">말하기 속도
-      <input id="rate" type="range" min="0.6" max="1.1" step="0.05" value="0.85" />
-    </label>
-    <span id="voice-status" class="voice-status"></span>
-  </div>
-
   <main>
-    <!-- ===== 음식 권하기 (Would you like some ~?) ===== -->
-    <section id="tab-suggest" class="tab-panel active">
-      <div class="section-block">
-        <h2>음식 권하기 · Would you like some ___? <span class="count">음식 10 · 대화 30</span></h2>
-        <div class="level-switch">
-          <button class="level-btn active" data-level="beginner">초급</button>
-          <button class="level-btn" data-level="intermediate">중급</button>
-          <button class="level-btn" data-level="advanced">고급</button>
-        </div>
-        <p class="hint">친구에게 음식을 권할 때는 <b>Would you like some ___?</b>, 대답은 <b>Yes, please.</b>, 맛을 물을 때는 <b>How's the food?</b>, 맛을 말할 때는 <b>It's ___.</b> 라고 해요. <b>초급</b>은 기본 대화, <b>중급</b>은 <b>Here you are.</b>(여기 있어)와 <b>really</b>(정말)가 더해지고, <b>고급</b>은 맛을 말한 뒤 한마디를 더 해요. 단어를 누르면 뜻과 발음을 알 수 있어요.</p>
-        <div id="suggestion-grid" class="card-grid dlg-grid"></div>
-      </div>
-    </section>
+    <!-- 활동 카드 (초급 · 중급) : app.js 가 같은 구조로 채워요 -->
+    <section id="tab-basic" class="tab-panel active" data-level="basic"></section>
+    <section id="tab-mid" class="tab-panel" data-level="mid"></section>
 
-    <!-- ===== 대답하기 (Yes, please. / No, thanks.) ===== -->
-    <section id="tab-answer" class="tab-panel">
-      <p class="hint" style="margin-bottom:18px">💡 <b>Would you like some ___?</b> 라고 물으면 먹고 싶을 때는 <b>Yes, please.</b>, 먹고 싶지 않을 때는 <b>No, thanks.</b> 라고 대답해요.</p>
-      <div class="section-block">
-        <h2>🙆 대답하기 <span class="count">2개</span></h2>
-        <p class="hint">이 단원의 주요 표현은 <b>Yes, please.</b> 예요. 공손하게 사양할 때는 <b>No, thanks.</b> 를 써요.</p>
-        <div id="answer-grid" class="card-grid"></div>
-      </div>
-      <div class="section-block">
-        <h2>🍽️ 권하고 대답하기 <span class="count">음식 10개</span></h2>
-        <p class="hint">음식을 고르면 <b>Would you like some ___?</b> 빈칸이 채워져요. 듣고 <b>Yes, please.</b> 로 대답해 보세요.</p>
-        <div class="fill-box" id="offer-fill">
-          <div class="fill-pattern">Would you like some <span class="blank" id="offer-blank">________</span>?</div>
-          <div class="fill-ko" id="offer-ko">________ 좀 먹을래?</div>
-          <div class="fill-pattern small">🙆 Yes, please.</div>
-          <div class="chip-group-title">🍽️ 음식 (Food)</div>
-          <div id="offer-chips" class="chip-row wrap"></div>
-          <div class="fill-actions" id="offer-actions"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== 맛 말하기 (How's the food? It's ~.) ===== -->
-    <section id="tab-taste" class="tab-panel">
-      <p class="hint" style="margin-bottom:18px">💡 <b>How's the food?</b> (음식 맛이 어때?) 라고 물으면 <b>It's ___.</b> 빈칸에 맛 표현을 넣어 대답해요.</p>
-      <div class="section-block">
-        <h2>😋 맛 표현 <span class="count">10개</span></h2>
-        <p class="hint">맛 표현 10가지를 듣고 따라 말해 보세요.</p>
-        <div id="taste-grid" class="card-grid five"></div>
-      </div>
-      <div class="section-block">
-        <h2>🥄 맛 말하기 <span class="count">빈칸 채우기</span></h2>
-        <p class="hint">맛 표현을 골라 빈칸을 채우면 문장이 완성돼요.</p>
-        <div class="fill-box" id="taste-fill">
-          <div class="fill-pattern small">🙋 How's the food?</div>
-          <div class="fill-pattern">It's <span class="blank" id="taste-blank">________</span>.</div>
-          <div class="fill-ko" id="taste-ko">________.</div>
-          <div class="chip-group-title">😋 맛 (Taste)</div>
-          <div id="taste-chips" class="chip-row wrap"></div>
-          <div class="fill-actions" id="taste-actions"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== 🎒 내 식탁 만들기 (3세트) ===== -->
-    <section id="tab-build" class="tab-panel">
-      <div class="section-block">
-        <h2>🎒 내 식탁 만들기 · 친구에게 권할 음식 <span class="count">3개</span></h2>
-        <p class="hint">친구에게 권할 <b>음식 3개</b>를 골라요. 음식마다 <b>음식 1개</b>와 그 음식의 <b>맛 1개</b>를 고르면 대화가 완성돼요. 다 만들면 <b>📝 공책에 적기</b> 표를 보고 옮겨 적고, <b>🎤 연습 · 짝 활동</b>에서 말해 봐요.</p>
-
-        <div class="set-tabs" id="set-tabs">
-          <button class="set-tab active" data-set="0">음식 1</button>
-          <button class="set-tab" data-set="1">음식 2</button>
-          <button class="set-tab" data-set="2">음식 3</button>
-        </div>
-
-        <div class="fill-box dialog-box">
-          <div class="dlg-mode">
-            <span class="dlg-mode-label">친구의 대답</span>
-            <div class="mode-switch" id="set-mode">
-              <button class="cat-btn active" id="set-mode-accept" data-mode="accept">🙆 Yes, please.</button>
-              <button class="cat-btn" id="set-mode-refuse" data-mode="refuse">🙅 No, thanks.</button>
-            </div>
-          </div>
-          <div class="br-dialogue">
-            <div class="br-line line-a">
-              <span class="br-who">🙋 나</span>
-              <div class="br-bubble">
-                <div class="br-sentence">Would you like some <span class="blank" id="set-food">________</span>?</div>
-                <div class="br-ko" id="set-food-ko">________ 좀 먹을래?</div>
-              </div>
-              <button class="speak-btn small" id="set-speak-offer" aria-label="이 줄 듣기">🔊</button>
-            </div>
-            <div class="br-line line-b" id="set-answer-row">
-              <span class="br-who">🙆 친구</span>
-              <div class="br-bubble">
-                <div class="br-sentence" id="set-answer-line">Yes, please.</div>
-                <div class="br-ko" id="set-answer-ko">응, 줘.</div>
-              </div>
-              <button class="speak-btn small" id="set-speak-answer" aria-label="이 줄 듣기">🔊</button>
-            </div>
-            <div class="br-line line-a" id="set-ask-row">
-              <span class="br-who">🙋 나</span>
-              <div class="br-bubble">
-                <div class="br-sentence">How's the food?</div>
-                <div class="br-ko">음식 맛이 어때?</div>
-              </div>
-              <button class="speak-btn small" id="set-speak-ask" aria-label="이 줄 듣기">🔊</button>
-            </div>
-            <div class="br-line line-b" id="set-taste-row">
-              <span class="br-who">🙆 친구</span>
-              <div class="br-bubble">
-                <div class="br-sentence">It's <span class="blank" id="set-taste">________</span>.</div>
-                <div class="br-ko" id="set-taste-ko">________.</div>
-              </div>
-              <button class="speak-btn small" id="set-speak-taste" aria-label="이 줄 듣기">🔊</button>
-            </div>
-          </div>
-          <div class="dlg-status" id="set-status"></div>
-          <div class="fill-actions">
-            <button id="set-listen" class="btn primary" disabled>🔊 대화 듣기</button>
-            <button id="set-random" class="btn ghost">🎲 무작위로 채우기</button>
-            <button id="set-clear" class="btn ghost">🧹 이 음식 비우기</button>
-          </div>
-        </div>
-
-        <div class="build-step">
-          <h3 class="build-label">1️⃣ 음식 고르기 <span class="build-sub">Would you like some ___?</span></h3>
-          <div id="build-food" class="chip-row wrap"></div>
-        </div>
-        <div class="build-step">
-          <h3 class="build-label">2️⃣ 맛 고르기 <span class="build-sub">How's the food? It's ___.</span></h3>
-          <div id="build-taste" class="chip-row wrap"></div>
-        </div>
-      </div>
-
-      <div class="section-block">
-        <h2>📝 공책에 적기 <span class="count">3개</span></h2>
-        <p class="hint">내가 만든 대화를 영어로 옮겨 적어요. 🔊를 누르면 읽어 줘요.</p>
-        <div id="sheet-summary" class="sheet-table"></div>
-      </div>
-    </section>
-
-    <!-- ===== 🎤 연습 · 짝 활동 ===== -->
+    <!-- 🎤 연습하기 -->
     <section id="tab-practice" class="tab-panel">
-      <div class="section-block">
-        <h2>👫 짝 활동 카드</h2>
-        <p class="hint">짝에게 내가 고른 음식을 권해요. 친구가 <b>Yes, please.</b> 라고 하면 <b>How's the food?</b> 로 맛을 물어보고, 친구는 <b>It's ___.</b> 로 대답해요. 친구가 고른 맛을 표시해 보세요!</p>
-        <div id="pair-cards" class="pair-cards"></div>
+      <div class="section-block summary-block no-print">
+        <h2>🎙️ 연습 기록</h2>
+        <div class="summary-stats">
+          <span class="stat">🎙️ 총 연습 <b id="sum-count">0</b>회</span>
+          <span class="stat">📊 평균 정확도 <b id="sum-avg">-</b></span>
+          <span class="stat">✅ 연습한 문장 <b id="sum-done">0/5</b></span>
+        </div>
+        <div class="summary-actions">
+          <button class="btn" id="btn-clear">🧹 기록 지우기</button>
+          <button class="btn" id="btn-play-all">🔊 전체 듣기</button>
+          <button class="btn" id="btn-print">🖨️ 인쇄하기</button>
+        </div>
+        <p class="hint" id="mic-support"></p>
       </div>
-      <div class="section-block">
-        <h2>🎤 컴퓨터와 미리 연습하기</h2>
-        <p class="hint">짝 활동 전에 혼자 연습해요. 줄마다 <b>🎙️ 말하기</b>로 정확도를 재고, <b>🎭 역할극</b>에서 내가 <b>A(권하는 사람)</b> 또는 <b>B(대답하는 사람)</b>를 맡으면 컴퓨터가 상대 역할을 읽어 줘요. (Chrome 권장)</p>
-        <p id="practice-empty" class="practice-empty">
-          아직 만든 식탁이 없어요! <b>🎒 내 식탁 만들기</b> 탭에서 음식과 맛을 골라 보세요.
-        </p>
-        <div id="practice-list" class="practice-list"></div>
+
+      <div class="section-block plan-block">
+        <h2>📅 나의 계획표 · <span class="en">My Plans</span></h2>
+        <p class="hint no-print">활동 카드에서 고른 계획이 여기에 모여요. 줄마다 <b>🎙️ 말하기</b>를 눌러 대답을 말해 보세요.</p>
+        <div id="plan-list" class="plan-list"></div>
       </div>
     </section>
-
   </main>
 
-  <footer class="app-footer">
-    <span class="voice-status">영어 · Would you like some ___? How's the food? It's ___. 🍽️</span>
-  </footer>
+  <div id="word-pop" class="word-pop" hidden></div>
+
+  <footer class="app-footer no-print">천재(함) 6학년 9단원 · <span class="en">What are you going to do?</span> · 그림: Canva AI</footer>
 
   <script src="data.js"></script>
   <script src="app.js"></script>

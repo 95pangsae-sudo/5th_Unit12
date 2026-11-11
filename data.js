@@ -1,193 +1,287 @@
 /* =========================================================
- * Would you like some ___? · How's the food? 데이터
- * - 음식 10가지 (Would you like some ___?)
- * - 맛 표현 10가지 (How's the food? It's ___.)
- * - 권하기 대화 : 초급 / 중급 / 고급 각 10개 (음식-맛 짝)
- *     A: Would you like some curry?   B: Yes, please.
- *     A: How's the food?              B: It's spicy.
- * - 대답 : Yes, please. (승낙) · No, thanks. (거절)
- * - 이미지 : images/foods/<id>.png · images/tastes/<id>.png  (Canva에서 만든 그림)
- *            파일이 없으면 이모지 타일로 자동 대체
- * - 단어 뜻 사전
- * - 내 식탁 세트(3개) 는 app.js 에서 localStorage 에 저장
+ * 천재(함) 6학년 9단원 · What are you going to do? 데이터
+ *   Q: What are you going to do ___?
+ *   A: I'm going to ___.
+ * - 질문 5개 (언제)
+ * - 활동 5종류 × 12개 = 60개 (📘 book: true = 교과서 표현)
+ *     { id, cat, en(동사구), ko("나는 ___ 거야"의 빈칸), emoji, when:[추천 질문], mid:{en, ko}, book? }
+ * - 그림 : images/<id>.png (Canva AI generate-image) · 없으면 이모지 타일
+ * - 단어 뜻 사전 DICT
  * ========================================================= */
 
-/* ===== 음식 10가지 ===== */
-const FOODS = [
-  { id: "curry",         en: "curry",         ko: "카레",         emoji: "🍛", taste: "spicy" },
-  { id: "cake",          en: "cake",          ko: "케이크",       emoji: "🍰", taste: "sweet" },
-  { id: "french-fries",  en: "French fries",  ko: "감자튀김",     emoji: "🍟", taste: "salty" },
-  { id: "lemonade",      en: "lemonade",      ko: "레모네이드",   emoji: "🍋", taste: "sour" },
-  { id: "green-tea",     en: "green tea",     ko: "녹차",         emoji: "🍵", taste: "bitter" },
-  { id: "bulgogi",       en: "bulgogi",       ko: "불고기",       emoji: "🥩", taste: "delicious" },
-  { id: "soup",          en: "soup",          ko: "수프",         emoji: "🍲", taste: "hot" },
-  { id: "ice-cream",     en: "ice cream",     ko: "아이스크림",   emoji: "🍨", taste: "cold" },
-  { id: "fried-chicken", en: "fried chicken", ko: "프라이드치킨", emoji: "🍗", taste: "crunchy" },
-  { id: "pizza",         en: "pizza",         ko: "피자",         emoji: "🍕", taste: "yummy" },
+/* ===== 질문 5개 ===== */
+const QUESTIONS = [
+  { id: "q1", emoji: "🌤️", en: "this afternoon",        ko: "오늘 오후", koAt: "오늘 오후에" },
+  { id: "q2", emoji: "🌙", en: "tonight",               ko: "오늘 밤",   koAt: "오늘 밤에" },
+  { id: "q3", emoji: "📅", en: "tomorrow",              ko: "내일",      koAt: "내일" },
+  { id: "q4", emoji: "🎈", en: "this weekend",          ko: "이번 주말", koAt: "이번 주말에" },
+  { id: "q5", emoji: "🎒", en: "this winter vacation",  ko: "겨울방학",  koAt: "겨울방학에" },
 ];
 
-/* ===== 맛 표현 10가지 (It's ___.) ===== */
-const TASTES = [
-  { id: "spicy",     en: "spicy",     ko: "매워",           emoji: "🌶️" },
-  { id: "sweet",     en: "sweet",     ko: "달아",           emoji: "🍬" },
-  { id: "salty",     en: "salty",     ko: "짜",             emoji: "🧂" },
-  { id: "sour",      en: "sour",      ko: "셔",             emoji: "😣" },
-  { id: "bitter",    en: "bitter",    ko: "써",             emoji: "😖" },
-  { id: "delicious", en: "delicious", ko: "맛있어",         emoji: "😋" },
-  { id: "hot",       en: "hot",       ko: "뜨거워",         emoji: "🔥" },
-  { id: "cold",      en: "cold",      ko: "차가워",         emoji: "🧊" },
-  { id: "crunchy",   en: "crunchy",   ko: "바삭바삭해",     emoji: "🥨" },
-  { id: "yummy",     en: "yummy",     ko: "아주 맛있어",    emoji: "🤤" },
+/* ===== 활동 종류 5개 ===== */
+const CATEGORIES = [
+  { id: "home",   emoji: "🏠", ko: "집·학교에서" },
+  { id: "sports", emoji: "⚽", ko: "운동·놀이" },
+  { id: "places", emoji: "📍", ko: "장소에 가기" },
+  { id: "family", emoji: "👨‍👩‍👧", ko: "가족과 함께" },
+  { id: "trip",   emoji: "✈️", ko: "가족 여행" },
 ];
 
-/* ===== 이미지 경로 (Canva에서 만든 PNG를 이 이름으로 저장) ===== */
-const IMAGE_DIR = { food: "images/foods/", taste: "images/tastes/" };
+/* ===== 활동 60개 (같은 종류 안에서 📘 교과서 표현이 맨 앞) ===== */
+const ACTIVITIES = [
+  /* 🏠 집·학교에서 */
+  { id: "stay-home", cat: "home", book: true, en: "stay home", ko: "집에 있을", emoji: "🏠", when: ["q1", "q2", "q4"],
+    mid: { en: "stay home and read comic books", ko: "집에서 만화책을 읽을" } },
+  { id: "clean-room", cat: "home", book: true, en: "clean my room", ko: "내 방을 청소할", emoji: "🧹", when: ["q1", "q4"],
+    mid: { en: "clean my room with my brother", ko: "남동생과 함께 내 방을 청소할" } },
+  { id: "study-math", cat: "home", book: true, en: "study math", ko: "수학 공부를 할", emoji: "➗", when: ["q1", "q2", "q3"],
+    mid: { en: "study math for the test with my friend", ko: "친구와 시험에 대비해 수학 공부를 할" } },
+  { id: "do-homework", cat: "home", en: "do my homework", ko: "숙제를 할", emoji: "📝", when: ["q1", "q2"],
+    mid: { en: "do my homework after school", ko: "학교가 끝나고 숙제를 할" } },
+  { id: "read-book", cat: "home", en: "read a book", ko: "책을 읽을", emoji: "📖", when: ["q2", "q4", "q5"],
+    mid: { en: "read a book about space in my room", ko: "내 방에서 우주에 관한 책을 읽을" } },
+  { id: "computer-games", cat: "home", en: "play computer games", ko: "컴퓨터 게임을 할", emoji: "🎮", when: ["q2", "q4"],
+    mid: { en: "play computer games with my cousin", ko: "사촌과 컴퓨터 게임을 할" } },
+  { id: "practice-piano", cat: "home", en: "practice the piano", ko: "피아노를 연습할", emoji: "🎹", when: ["q1", "q3"],
+    mid: { en: "practice the piano for the school concert", ko: "학교 음악회를 위해 피아노를 연습할" } },
+  { id: "draw-leaves", cat: "home", en: "draw autumn leaves", ko: "단풍잎을 그릴", emoji: "🍁", when: ["q1", "q4"],
+    mid: { en: "draw autumn leaves for art class", ko: "미술 시간에 쓸 단풍잎을 그릴" } },
+  { id: "watch-movie", cat: "home", en: "watch a movie", ko: "영화를 볼", emoji: "🎬", when: ["q2", "q4"],
+    mid: { en: "watch a movie on the sofa with my sister", ko: "언니(누나)와 소파에서 영화를 볼" } },
+  { id: "write-diary", cat: "home", en: "write in my diary", ko: "일기를 쓸", emoji: "📔", when: ["q2"],
+    mid: { en: "write in my diary before bed", ko: "자기 전에 일기를 쓸" } },
+  { id: "go-to-bed-early", cat: "home", en: "go to bed early", ko: "일찍 잘", emoji: "😴", when: ["q2"],
+    mid: { en: "go to bed early for the school trip", ko: "현장 체험 학습 때문에 일찍 잘" } },
+  { id: "practice-dance", cat: "home", en: "practice a dance", ko: "춤을 연습할", emoji: "💃", when: ["q1", "q3"],
+    mid: { en: "practice a dance for the school festival", ko: "학교 축제에서 출 춤을 연습할" } },
+
+  /* ⚽ 운동·놀이 */
+  { id: "watch-baseball", cat: "sports", book: true, en: "watch a baseball game", ko: "야구 경기를 볼", emoji: "⚾", when: ["q2", "q3", "q4"],
+    mid: { en: "watch a baseball game with my dad at the stadium", ko: "아빠와 야구장에서 야구 경기를 볼" } },
+  { id: "play-soccer", cat: "sports", en: "play soccer", ko: "축구를 할", emoji: "⚽", when: ["q1", "q3", "q4"],
+    mid: { en: "play soccer with my friends at the park", ko: "공원에서 친구들과 축구를 할" } },
+  { id: "ride-bike", cat: "sports", en: "ride my bike", ko: "자전거를 탈", emoji: "🚲", when: ["q1", "q4"],
+    mid: { en: "ride my bike along the river", ko: "강을 따라 자전거를 탈" } },
+  { id: "fly-kite", cat: "sports", en: "fly a kite", ko: "연을 날릴", emoji: "🪁", when: ["q1", "q4"],
+    mid: { en: "fly a kite on the hill", ko: "언덕에서 연을 날릴" } },
+  { id: "play-badminton", cat: "sports", en: "play badminton", ko: "배드민턴을 칠", emoji: "🏸", when: ["q1", "q3"],
+    mid: { en: "play badminton with my mom in the park", ko: "공원에서 엄마와 배드민턴을 칠" } },
+  { id: "go-swimming", cat: "sports", en: "go swimming", ko: "수영하러 갈", emoji: "🏊", when: ["q3", "q4", "q5"],
+    mid: { en: "go swimming at the indoor pool", ko: "실내 수영장에 수영하러 갈" } },
+  { id: "play-basketball", cat: "sports", en: "play basketball", ko: "농구를 할", emoji: "🏀", when: ["q1", "q3"],
+    mid: { en: "play basketball with my classmates after school", ko: "방과 후에 반 친구들과 농구를 할" } },
+  { id: "jump-rope", cat: "sports", en: "jump rope", ko: "줄넘기를 할", emoji: "🪢", when: ["q1", "q3"],
+    mid: { en: "jump rope in the schoolyard", ko: "운동장에서 줄넘기를 할" } },
+  { id: "play-dodgeball", cat: "sports", en: "play dodgeball", ko: "피구를 할", emoji: "🤾", when: ["q1", "q3"],
+    mid: { en: "play dodgeball in the gym with my class", ko: "체육관에서 우리 반과 피구를 할" } },
+  { id: "inline-skating", cat: "sports", en: "go inline skating", ko: "인라인스케이트를 타러 갈", emoji: "🛼", when: ["q1", "q4"],
+    mid: { en: "go inline skating at the park with my friend", ko: "친구와 공원에 인라인스케이트를 타러 갈" } },
+  { id: "practice-taekwondo", cat: "sports", en: "practice taekwondo", ko: "태권도를 연습할", emoji: "🥋", when: ["q1", "q2", "q3"],
+    mid: { en: "practice taekwondo for the belt test", ko: "승급 심사를 위해 태권도를 연습할" } },
+  { id: "go-hiking", cat: "sports", en: "go hiking", ko: "등산하러 갈", emoji: "🥾", when: ["q3", "q4"],
+    mid: { en: "go hiking with my uncle to see the autumn leaves", ko: "삼촌과 단풍을 보러 등산하러 갈" } },
+
+  /* 📍 장소에 가기 */
+  { id: "pc-room", cat: "places", en: "go to a PC room", ko: "PC방에 갈", emoji: "🖥️", when: ["q1", "q4"],
+    mid: { en: "go to a PC room with my best friend", ko: "가장 친한 친구와 PC방에 갈" } },
+  { id: "comic-cafe", cat: "places", en: "go to a comic book cafe", ko: "만화 카페에 갈", emoji: "📚", when: ["q1", "q4"],
+    mid: { en: "go to a comic book cafe to read new comics", ko: "새 만화책을 읽으러 만화 카페에 갈" } },
+  { id: "karaoke", cat: "places", en: "go to a karaoke room", ko: "코인노래방에 갈", emoji: "🎤", when: ["q1", "q4"],
+    mid: { en: "go to a karaoke room to sing K-pop songs", ko: "K팝 노래를 부르러 코인노래방에 갈" } },
+  { id: "library", cat: "places", en: "go to the library", ko: "도서관에 갈", emoji: "🏛️", when: ["q1", "q3", "q4"],
+    mid: { en: "go to the library to borrow some books", ko: "책을 빌리러 도서관에 갈" } },
+  { id: "bookstore", cat: "places", en: "go to a bookstore", ko: "서점에 갈", emoji: "📕", when: ["q3", "q4"],
+    mid: { en: "go to a bookstore to buy a new comic book", ko: "새 만화책을 사러 서점에 갈" } },
+  { id: "shopping-mall", cat: "places", en: "go to the shopping mall", ko: "쇼핑몰에 갈", emoji: "🛍️", when: ["q4", "q5"],
+    mid: { en: "go to the shopping mall to buy new shoes", ko: "새 신발을 사러 쇼핑몰에 갈" } },
+  { id: "bakery", cat: "places", en: "go to a bakery", ko: "빵집에 갈", emoji: "🥐", when: ["q1", "q3"],
+    mid: { en: "go to a bakery to buy a cake for my mom", ko: "엄마께 드릴 케이크를 사러 빵집에 갈" } },
+  { id: "escape-room", cat: "places", en: "go to an escape room cafe", ko: "방탈출 카페에 갈", emoji: "🔐", when: ["q4", "q5"],
+    mid: { en: "go to an escape room cafe with my friends", ko: "친구들과 방탈출 카페에 갈" } },
+  { id: "trampoline-park", cat: "places", en: "go to a trampoline park", ko: "트램펄린 파크에 갈", emoji: "🤸", when: ["q4", "q5"],
+    mid: { en: "go to a trampoline park with my little brother", ko: "남동생과 트램펄린 파크에 갈" } },
+  { id: "cat-cafe", cat: "places", en: "go to a cat cafe", ko: "고양이 카페에 갈", emoji: "🐱", when: ["q1", "q4"],
+    mid: { en: "go to a cat cafe to play with cute cats", ko: "귀여운 고양이와 놀러 고양이 카페에 갈" } },
+  { id: "hair-salon", cat: "places", en: "go to a hair salon", ko: "미용실에 갈", emoji: "💇", when: ["q1", "q3"],
+    mid: { en: "go to a hair salon to get a haircut", ko: "머리를 자르러 미용실에 갈" } },
+  { id: "dentist", cat: "places", en: "go to the dentist", ko: "치과에 갈", emoji: "🦷", when: ["q1", "q3"],
+    mid: { en: "go to the dentist with my mom", ko: "엄마와 치과에 갈" } },
+
+  /* 👨‍👩‍👧 가족과 함께 */
+  { id: "visit-grandparents", cat: "family", book: true, en: "visit my grandparents", ko: "조부모님 댁을 방문할", emoji: "👵", when: ["q3", "q4", "q5"],
+    mid: { en: "visit my grandparents in the countryside", ko: "시골에 계신 조부모님 댁을 방문할" } },
+  { id: "pick-apples", cat: "family", en: "pick apples", ko: "사과를 딸", emoji: "🍎", when: ["q3", "q4"],
+    mid: { en: "pick apples with my family at the farm", ko: "농장에서 가족과 사과를 딸" } },
+  { id: "see-autumn-leaves", cat: "family", en: "see the autumn leaves", ko: "단풍 구경을 할", emoji: "🍁", when: ["q3", "q4"],
+    mid: { en: "see the autumn leaves at the mountain with my family", ko: "가족과 산에서 단풍 구경을 할" } },
+  { id: "gather-chestnuts", cat: "family", en: "gather chestnuts", ko: "밤을 주울", emoji: "🌰", when: ["q3", "q4"],
+    mid: { en: "gather chestnuts with my grandpa in the forest", ko: "할아버지와 숲에서 밤을 주울" } },
+  { id: "dig-sweet-potatoes", cat: "family", en: "dig sweet potatoes", ko: "고구마를 캘", emoji: "🍠", when: ["q3", "q4"],
+    mid: { en: "dig sweet potatoes on my uncle's farm", ko: "삼촌네 밭에서 고구마를 캘" } },
+  { id: "make-kimchi", cat: "family", en: "make kimchi", ko: "김장을 할", emoji: "🥬", when: ["q3", "q4"],
+    mid: { en: "make kimchi with my grandma for the winter", ko: "겨울을 위해 할머니와 김장을 할" } },
+  { id: "cook-dinner", cat: "family", en: "cook dinner", ko: "저녁을 만들", emoji: "🍳", when: ["q1", "q2"],
+    mid: { en: "cook kimchi stew with my mom for dinner", ko: "저녁으로 엄마와 김치찌개를 만들" } },
+  { id: "bake-cookies", cat: "family", en: "bake cookies", ko: "쿠키를 구울", emoji: "🍪", when: ["q1", "q4"],
+    mid: { en: "bake cookies with my sister in the kitchen", ko: "부엌에서 언니(누나)와 쿠키를 구울" } },
+  { id: "go-to-market", cat: "family", en: "go to the market", ko: "시장에 갈", emoji: "🧺", when: ["q1", "q4"],
+    mid: { en: "go to the market with my mom to buy fruit", ko: "과일을 사러 엄마와 시장에 갈" } },
+  { id: "walk-dog", cat: "family", en: "walk my dog", ko: "강아지를 산책시킬", emoji: "🐕", when: ["q1", "q2"],
+    mid: { en: "walk my dog in the park with my dad", ko: "아빠와 공원에서 강아지를 산책시킬" } },
+  { id: "have-picnic", cat: "family", en: "have a picnic", ko: "소풍을 갈", emoji: "🥪", when: ["q3", "q4"],
+    mid: { en: "have a picnic in the park with my family", ko: "가족과 공원으로 소풍을 갈" } },
+  { id: "fireworks-festival", cat: "family", en: "go to a fireworks festival", ko: "불꽃 축제에 갈", emoji: "🎆", when: ["q2", "q4"],
+    mid: { en: "go to a fireworks festival with my parents", ko: "부모님과 불꽃 축제에 갈" } },
+
+  /* ✈️ 가족 여행 */
+  { id: "go-camping", cat: "trip", book: true, en: "go camping", ko: "캠핑하러 갈", emoji: "🏕️", when: ["q4", "q5"],
+    mid: { en: "go camping with my family by the lake", ko: "가족과 호숫가로 캠핑하러 갈" } },
+  { id: "jeju", cat: "trip", en: "go to Jeju Island", ko: "제주도에 갈", emoji: "🍊", when: ["q4", "q5"],
+    mid: { en: "go to Jeju Island by plane with my family", ko: "가족과 비행기를 타고 제주도에 갈" } },
+  { id: "gyeongju", cat: "trip", en: "go to Gyeongju", ko: "경주에 갈", emoji: "🛕", when: ["q4", "q5"],
+    mid: { en: "go to Gyeongju to see Bulguksa", ko: "불국사를 보러 경주에 갈" } },
+  { id: "busan", cat: "trip", en: "go to Busan", ko: "부산에 갈", emoji: "🌊", when: ["q4", "q5"],
+    mid: { en: "go to Busan to visit Haeundae Beach", ko: "해운대 해수욕장에 가러 부산에 갈" } },
+  { id: "seoraksan", cat: "trip", en: "go to Seoraksan", ko: "설악산에 갈", emoji: "⛰️", when: ["q4", "q5"],
+    mid: { en: "go to Seoraksan to see the autumn leaves", ko: "단풍을 보러 설악산에 갈" } },
+  { id: "jeonju", cat: "trip", en: "go to Jeonju", ko: "전주에 갈", emoji: "🍲", when: ["q4", "q5"],
+    mid: { en: "go to Jeonju to eat bibimbap", ko: "비빔밥을 먹으러 전주에 갈" } },
+  { id: "amusement-park", cat: "trip", en: "go to an amusement park", ko: "놀이공원에 갈", emoji: "🎢", when: ["q4", "q5"],
+    mid: { en: "go to an amusement park to ride a roller coaster", ko: "롤러코스터를 타러 놀이공원에 갈" } },
+  { id: "aquarium", cat: "trip", en: "go to the aquarium", ko: "아쿠아리움에 갈", emoji: "🐠", when: ["q4", "q5"],
+    mid: { en: "go to the aquarium to see sharks and penguins", ko: "상어와 펭귄을 보러 아쿠아리움에 갈" } },
+  { id: "zoo", cat: "trip", en: "go to the zoo", ko: "동물원에 갈", emoji: "🦁", when: ["q3", "q4"],
+    mid: { en: "go to the zoo to see lions and giraffes", ko: "사자와 기린을 보러 동물원에 갈" } },
+  { id: "hot-spring", cat: "trip", en: "go to a hot spring", ko: "온천에 갈", emoji: "♨️", when: ["q4", "q5"],
+    mid: { en: "go to a hot spring with my grandparents", ko: "조부모님과 온천에 갈" } },
+  { id: "train-trip", cat: "trip", en: "take a train trip", ko: "기차 여행을 갈", emoji: "🚆", when: ["q4", "q5"],
+    mid: { en: "take a train trip to Gangneung", ko: "강릉으로 기차 여행을 갈" } },
+  { id: "vietnam", cat: "trip", en: "travel to Vietnam", ko: "베트남으로 여행을 갈", emoji: "🌴", when: ["q5"],
+    mid: { en: "travel to Vietnam to swim in the warm sea", ko: "따뜻한 바다에서 수영하러 베트남으로 여행을 갈" } },
+];
+
+/* ===== 그림 ===== */
+const IMAGE_DIR = "images/";
 const IMAGE_EXT = ".png";
 
-/* Canva에서 그림을 만들 때 쓴 문구 (README 참고) */
-const CANVA_PROMPTS = {
-  curry:           "cute cartoon bowl of Japanese curry rice with steam, red chili pepper, kids illustration, bright colors, white background",
-  cake:            "cute cartoon slice of strawberry cream cake, sparkles, kids illustration, bright colors, white background",
-  "french-fries":  "cute cartoon French fries in a red box with salt sprinkles, kids illustration, white background",
-  lemonade:        "cute cartoon glass of lemonade with lemon slices and ice, kids illustration, white background",
-  "green-tea":     "cute cartoon cup of green tea with tea leaves and steam, kids illustration, white background",
-  bulgogi:         "cute cartoon Korean bulgogi beef on a plate with sesame, kids illustration, white background",
-  soup:            "cute cartoon hot bowl of soup with lots of steam, kids illustration, white background",
-  "ice-cream":     "cute cartoon ice cream cone with three colorful scoops, kids illustration, white background",
-  "fried-chicken": "cute cartoon crispy fried chicken drumsticks in a basket, kids illustration, white background",
-  pizza:           "cute cartoon pepperoni pizza with stretchy cheese, kids illustration, white background",
-  spicy:           "cartoon child eating spicy food with fire coming out of mouth, red face, funny, kids illustration",
-  sweet:           "cartoon happy child tasting sweet candy with hearts, kids illustration",
-  salty:           "cartoon child tasting very salty food, salt shaker, funny face, kids illustration",
-  sour:            "cartoon child tasting a sour lemon, squinting puckered face, kids illustration",
-  bitter:          "cartoon child tasting bitter medicine, grimacing face, kids illustration",
-  delicious:       "cartoon child eating delicious food with big smile and thumbs up, kids illustration",
-  hot:             "cartoon child blowing on very hot steaming soup, kids illustration",
-  cold:            "cartoon child shivering while eating ice cream, ice cubes, kids illustration",
-  crunchy:         "cartoon child biting crunchy snack with crunch sound effect, kids illustration",
-  yummy:           "cartoon child rubbing tummy saying yummy, sparkling eyes, kids illustration",
+/* Canva generate-image 문구 틀 (같은 그림체 유지) — [장면]만 바꿔요 */
+const CANVA_TEMPLATE =
+  "Cute flat vector illustration for an elementary school English flashcard: [SCENE]. " +
+  "Warm autumn colors, simple clean shapes, white background, no text, no letters.";
+
+/* 활동별 장면 (학생이 그림만 보고 뜻을 알 수 있게 구체적으로) */
+const CANVA_SCENES = {
+  "stay-home": "a Korean kid relaxing on a sofa at home in pajamas, reading a comic book, a cozy living room with a window",
+  "clean-room": "a Korean boy and his little brother cleaning their bedroom with a broom and a duster, putting toys into a box",
+  "study-math": "two Korean kids studying math at a desk with a math workbook showing plus, minus and times symbols, pencils and an eraser",
+  "do-homework": "a Korean kid with a school backpack doing homework at a desk, writing in a notebook, a pencil case nearby",
+  "read-book": "a Korean kid reading a big book about space with planets and a rocket on the cover, sitting on a bed in a bedroom",
+  "computer-games": "two Korean kids holding game controllers and playing a video game in front of a monitor at home",
+  "practice-piano": "a Korean girl practicing the piano with sheet music, music notes floating in the air",
+  "draw-leaves": "a Korean kid drawing red and yellow maple leaves with crayons on drawing paper, real autumn leaves on the table",
+  "watch-movie": "a Korean brother and sister sitting on a sofa watching a movie on TV with a big bowl of popcorn",
+  "write-diary": "a Korean kid writing in a diary at night by a desk lamp, a moon in the window",
+  "go-to-bed-early": "a Korean kid sleeping in bed under a blanket, an alarm clock showing early evening and a moon in the window",
+  "practice-dance": "a group of Korean kids practicing a dance together in a school classroom, happy poses",
+  "watch-baseball": "a Korean kid and dad cheering in the seats of a baseball stadium, a baseball player hitting a ball on the field",
+  "play-soccer": "Korean kids playing soccer on a grass field in a park, one kid kicking a soccer ball toward a goal",
+  "ride-bike": "a Korean kid riding a bicycle with a helmet on a bike path along a river with autumn trees",
+  "fly-kite": "two Korean kids flying a colorful diamond kite on a grassy hill, autumn trees around",
+  "play-badminton": "a Korean kid and mom playing badminton in a park with rackets and a shuttlecock in the air",
+  "go-swimming": "a Korean kid with swim goggles and a swim cap swimming in an indoor swimming pool with lane lines",
+  "play-basketball": "Korean kids playing basketball on an outdoor court, one kid shooting the ball into the hoop",
+  "jump-rope": "a Korean kid jumping rope in a school playground, the rope swinging over the head",
+  "play-dodgeball": "Korean kids playing dodgeball in a school gym, one kid throwing a red rubber ball and others dodging",
+  "inline-skating": "a Korean kid inline skating in a park with a helmet, knee pads and inline skates",
+  "practice-taekwondo": "a Korean kid in a white taekwondo uniform with a belt doing a high kick in a taekwondo gym",
+  "go-hiking": "a Korean kid and uncle hiking up a mountain trail with backpacks and hiking sticks, red and yellow autumn trees",
+  "pc-room": "two Korean kids wearing headsets playing computer games side by side in a PC room with rows of computers",
+  "comic-cafe": "a Korean kid sitting in a cozy reading nook in a comic book cafe, reading a comic book, shelves full of comic books",
+  "karaoke": "two Korean kids singing with microphones in a small coin karaoke room with a screen and colorful lights",
+  "library": "a Korean kid borrowing books at a library desk, tall bookshelves full of books behind",
+  "bookstore": "a Korean kid choosing a comic book from shelves in a bookstore, holding a book",
+  "shopping-mall": "a Korean kid and mom with shopping bags inside a bright shopping mall, trying on new sneakers",
+  "bakery": "a Korean kid in a bakery pointing at a strawberry cake in a glass display, bread and croissants on shelves",
+  "escape-room": "Korean kids in an escape room solving a puzzle, a locked door with a padlock, a magnifying glass and a key",
+  "trampoline-park": "Korean kids jumping high on trampolines in an indoor trampoline park",
+  "cat-cafe": "a Korean kid sitting on the floor in a cat cafe petting cute cats, cat towers around",
+  "hair-salon": "a Korean kid sitting in a hair salon chair getting a haircut from a hairdresser with scissors, a big mirror",
+  "dentist": "a Korean kid sitting in a dentist chair with mouth open, a friendly dentist checking teeth, a big tooth poster",
+  "visit-grandparents": "a Korean family visiting grandma and grandpa at a traditional Korean countryside house, grandparents hugging a kid",
+  "pick-apples": "a Korean family picking red apples from apple trees in an orchard, a basket full of apples",
+  "see-autumn-leaves": "a Korean family looking at bright red and yellow maple trees on a mountain path, leaves falling",
+  "gather-chestnuts": "a Korean kid and grandpa gathering chestnuts in spiky shells from the forest floor into a basket",
+  "dig-sweet-potatoes": "a Korean kid and uncle digging up purple sweet potatoes from the soil in a farm field",
+  "make-kimchi": "a Korean kid and grandma making kimchi, spreading red pepper paste on napa cabbage in a big bowl",
+  "cook-dinner": "a Korean kid and mom cooking kimchi stew in a pot in the kitchen, wearing aprons",
+  "bake-cookies": "a Korean kid and older sister baking cookies in a kitchen, a tray of cookies coming out of the oven",
+  "go-to-market": "a Korean kid and mom shopping at a traditional Korean market, fruit stalls with apples and persimmons",
+  "walk-dog": "a Korean kid and dad walking a small dog on a leash in a park with autumn trees",
+  "have-picnic": "a Korean family having a picnic on a mat in a park, gimbap, fruit and drinks, autumn trees",
+  "fireworks-festival": "a Korean family watching colorful fireworks in the night sky over a river at a fireworks festival",
+  "go-camping": "a Korean family camping by a lake with a tent, a campfire and marshmallows, autumn trees",
+  "jeju": "a Korean family arriving on Jeju Island by airplane, a dol hareubang stone statue, tangerines and a volcano mountain",
+  "gyeongju": "a Korean family visiting Bulguksa temple in Gyeongju with its stone pagoda and traditional roof",
+  "busan": "a Korean family at Haeundae beach in Busan, blue sea, sand and tall buildings, seagulls",
+  "seoraksan": "a Korean family looking at the rocky peaks of Seoraksan mountain covered with red and orange autumn leaves",
+  "jeonju": "a Korean family eating colorful bibimbap in a bowl in a traditional hanok village in Jeonju",
+  "amusement-park": "Korean kids riding a roller coaster at an amusement park, a ferris wheel in the background",
+  "aquarium": "a Korean kid looking at sharks and penguins through a big glass tank in an aquarium",
+  "zoo": "a Korean kid at the zoo looking at a lion and a tall giraffe, pointing happily",
+  "hot-spring": "a Korean kid and grandparents relaxing in a steaming outdoor hot spring pool, towels on their heads",
+  "train-trip": "a Korean family looking out the window of a train, the blue sea and the beach outside",
+  "vietnam": "a Korean family on a tropical beach in Vietnam with palm trees, a conical hat and warm blue sea",
 };
 
-/* ===== 권하기 대화 (난이도별) =====
- * lines: [A 권하기, B 대답, A 맛 묻기, B 맛 말하기] */
-const findFood  = id => FOODS.find(f => f.id === id) || null;
-const findTaste = id => TASTES.find(t => t.id === id) || null;
-
-function basicLines(food, taste) {
-  return [
-    { who: "A", en: `Would you like some ${food.en}?`, ko: `${food.ko} 좀 먹을래?` },
-    { who: "B", en: "Yes, please.",                   ko: "응, 줘." },
-    { who: "A", en: "How's the food?",                ko: "음식 맛이 어때?" },
-    { who: "B", en: `It's ${taste.en}.`,               ko: `${taste.ko}.` },
-  ];
-}
-
-/* 고급: 음식마다 맛 + 한마디 더 */
-const ADVANCED_TAIL = {
-  curry:           { en: "It's spicy, but I love it.",        ko: "매운데 정말 좋아." },
-  cake:            { en: "It's sweet. Can I have some more?", ko: "달아. 더 먹어도 돼?" },
-  "french-fries":  { en: "It's salty. I need some water.",    ko: "짜. 물이 좀 필요해." },
-  lemonade:        { en: "It's sour. I can't open my eyes!",  ko: "셔. 눈을 못 뜨겠어!" },
-  "green-tea":     { en: "It's bitter. I don't like it.",     ko: "써. 나는 별로야." },
-  bulgogi:         { en: "It's delicious. You're a great cook!", ko: "맛있어. 너 요리 정말 잘한다!" },
-  soup:            { en: "It's hot. Be careful!",             ko: "뜨거워. 조심해!" },
-  "ice-cream":     { en: "It's cold. My teeth hurt!",         ko: "차가워. 이가 시려!" },
-  "fried-chicken": { en: "It's crunchy. It's my favorite.",   ko: "바삭바삭해. 내가 제일 좋아하는 거야." },
-  pizza:           { en: "It's yummy. Let's eat more!",       ko: "아주 맛있어. 더 먹자!" },
-};
-
-function dialogueFor(level, food) {
-  const taste = findTaste(food.taste);
-  const lines = basicLines(food, taste);
-  if (level === "intermediate") {
-    lines[1] = { who: "B", en: "Yes, please. Thank you.",       ko: "응, 줘. 고마워." };
-    lines[2] = { who: "A", en: "Here you are. How's the food?", ko: "여기 있어. 음식 맛이 어때?" };
-    lines[3] = { who: "B", en: `It's really ${taste.en}.`,       ko: `정말 ${taste.ko}.` };
-  } else if (level === "advanced") {
-    lines[1] = { who: "B", en: "Yes, please. Thank you.",       ko: "응, 줘. 고마워." };
-    lines[2] = { who: "A", en: "Here you are. How's the food?", ko: "여기 있어. 음식 맛이 어때?" };
-    lines[3] = Object.assign({ who: "B" }, ADVANCED_TAIL[food.id]);
-  }
-  return lines;
-}
-
-/* ===== 대답 (Yes / No) ===== */
-const ANSWER_EXPRESSIONS = [
-  { en: "Yes, please.", ko: "응, 줘. (네, 주세요.)",   emoji: "🙆", type: "yes" },
-  { en: "No, thanks.",  ko: "아니, 괜찮아. (고마워.)", emoji: "🙅", type: "no" },
-];
-
-/* ===== 단어 뜻 사전 ===== */
-function wordKey(w) {
-  return w.toLowerCase().replace(/^[^a-z0-9']+/, "").replace(/[^a-z0-9']+$/, "");
-}
-
-const WORD_MEANINGS = {
-  "would": "~하겠니? (공손하게 물을 때)",
-  "you": "너, 너희",
-  "like": "좋아하다 (would like: 원하다)",
-  "some": "조금, 약간의",
-  "yes": "응, 네",
-  "please": "제발, ~해 주세요",
-  "no": "아니",
-  "thanks": "고마워",
-  "thank": "고마워하다 (thank you: 고마워)",
-  "how's": "~은 어때? (how is)",
-  "how": "어떻게, 어때",
-  "the": "그 (특정한 것)",
-  "food": "음식",
-  "it's": "그것은 ~이야 (it is)",
-  "it": "그것",
-  "is": "~이다",
-  "here": "여기",
-  "are": "~이다 (here you are: 여기 있어)",
-  "really": "정말",
-  "curry": "카레",
-  "cake": "케이크",
-  "french": "프랑스의 (French fries: 감자튀김)",
-  "fries": "감자튀김 (French fries)",
-  "lemonade": "레모네이드",
-  "green": "초록색의 (green tea: 녹차)",
-  "tea": "차 (green tea: 녹차)",
-  "bulgogi": "불고기",
-  "soup": "수프, 국",
-  "ice": "얼음 (ice cream: 아이스크림)",
-  "cream": "크림 (ice cream: 아이스크림)",
-  "fried": "튀긴",
-  "chicken": "닭고기, 치킨",
-  "pizza": "피자",
-  "spicy": "매운",
-  "sweet": "단, 달콤한",
-  "salty": "짠",
-  "sour": "신, 시큼한",
-  "bitter": "쓴",
-  "delicious": "맛있는",
-  "hot": "뜨거운; 매운",
-  "cold": "차가운",
-  "crunchy": "바삭바삭한",
-  "yummy": "아주 맛있는 (아이들 말)",
-  "but": "하지만, 그런데",
-  "i": "나는",
-  "love": "아주 좋아하다",
-  "can": "~할 수 있다",
-  "can't": "~할 수 없다",
-  "have": "먹다, 가지다",
-  "more": "더",
-  "need": "필요하다",
-  "water": "물",
-  "open": "뜨다, 열다",
-  "my": "나의",
-  "eyes": "눈 (두 눈)",
-  "don't": "~하지 않다 (do not)",
-  "you're": "너는 ~이야 (you are)",
-  "a": "하나의",
-  "great": "훌륭한",
-  "cook": "요리사; 요리하다",
-  "be": "~이 되다 (be careful: 조심해)",
-  "careful": "조심하는",
-  "teeth": "이, 치아 (여러 개)",
-  "hurt": "아프다",
-  "favorite": "가장 좋아하는 것",
-  "let's": "~하자 (let us)",
-  "eat": "먹다",
+/* ===== 단어 뜻 사전 (소문자 기준) ===== */
+const DICT = {
+  /* 질문 · 대답 */
+  "what": "무엇", "are": "~이다 (be동사)", "you": "너, 너는", "going": "~할 예정인 (be going to)",
+  "to": "~로, ~하기 위해", "do": "하다", "i'm": "나는 ~이다 (I am)", "i": "나", "am": "~이다 (be동사)",
+  "this": "이, 이번", "afternoon": "오후", "tonight": "오늘 밤", "tomorrow": "내일",
+  "weekend": "주말", "winter": "겨울", "vacation": "방학, 휴가",
+  /* 공통 작은 단어 */
+  "a": "하나의", "an": "하나의", "the": "그", "my": "나의", "with": "~와 함께", "at": "~에서",
+  "in": "~ 안에서", "on": "~ 위에서, ~에서", "for": "~을 위해", "and": "그리고", "by": "~ 옆에, ~을 타고",
+  "about": "~에 관한", "after": "~ 후에", "before": "~ 전에", "along": "~을 따라", "some": "몇몇의, 약간의",
+  /* 동사 */
+  "stay": "머무르다", "clean": "청소하다", "study": "공부하다", "read": "읽다", "play": "놀다, (운동·게임을) 하다",
+  "practice": "연습하다", "draw": "그리다", "watch": "보다, 지켜보다", "write": "쓰다", "go": "가다",
+  "ride": "타다", "fly": "날리다, 날다", "jump": "뛰다", "visit": "방문하다", "pick": "따다, 고르다",
+  "see": "보다", "gather": "모으다, 줍다", "dig": "파다, 캐다", "make": "만들다", "cook": "요리하다",
+  "bake": "굽다", "walk": "걷다, 산책시키다", "have": "가지다, 하다", "take": "타다, 가지고 가다",
+  "travel": "여행하다", "sing": "노래하다", "borrow": "빌리다", "buy": "사다", "get": "받다, 얻다",
+  "eat": "먹다", "swim": "수영하다", "camping": "캠핑", "swimming": "수영", "hiking": "등산, 하이킹",
+  "skating": "스케이트 타기",
+  /* 명사 · 형용사 */
+  "home": "집, 집에", "room": "방", "math": "수학", "homework": "숙제", "book": "책", "books": "책들",
+  "computer": "컴퓨터", "games": "게임들", "game": "경기, 게임", "piano": "피아노", "autumn": "가을",
+  "leaves": "나뭇잎들 (단풍)", "movie": "영화", "diary": "일기장", "bed": "침대, 잠자리", "early": "일찍",
+  "dance": "춤", "baseball": "야구", "soccer": "축구", "bike": "자전거", "kite": "연", "badminton": "배드민턴",
+  "basketball": "농구", "rope": "줄, 밧줄", "dodgeball": "피구", "inline": "인라인", "taekwondo": "태권도",
+  "pc": "피시(PC), 컴퓨터", "comic": "만화", "comics": "만화책들", "cafe": "카페", "karaoke": "노래방",
+  "library": "도서관", "bookstore": "서점", "shopping": "쇼핑", "mall": "쇼핑몰", "bakery": "빵집",
+  "escape": "탈출", "trampoline": "트램펄린", "park": "공원", "cat": "고양이", "cats": "고양이들",
+  "hair": "머리카락", "salon": "미용실", "dentist": "치과 의사, 치과", "grandparents": "조부모님",
+  "apples": "사과들", "chestnuts": "밤들", "sweet": "달콤한", "potatoes": "감자들 (sweet potato 고구마)",
+  "kimchi": "김치", "dinner": "저녁 식사", "cookies": "쿠키들", "market": "시장", "dog": "개, 강아지",
+  "picnic": "소풍", "fireworks": "불꽃놀이", "festival": "축제", "jeju": "제주", "island": "섬",
+  "gyeongju": "경주", "busan": "부산", "seoraksan": "설악산", "jeonju": "전주", "amusement": "놀이, 즐거움",
+  "aquarium": "아쿠아리움, 수족관", "zoo": "동물원", "hot": "뜨거운", "spring": "샘 (hot spring 온천)",
+  "train": "기차", "trip": "여행", "vietnam": "베트남",
+  /* 중급 문장 단어 */
+  "brother": "남자 형제 (형·오빠·남동생)", "test": "시험", "friend": "친구", "friends": "친구들",
+  "school": "학교", "space": "우주", "cousin": "사촌", "concert": "음악회, 콘서트", "art": "미술",
+  "class": "수업, 반", "sofa": "소파", "sister": "여자 형제 (언니·누나·여동생)", "dad": "아빠",
+  "stadium": "경기장, 야구장", "river": "강", "hill": "언덕", "mom": "엄마", "indoor": "실내의",
+  "pool": "수영장", "classmates": "반 친구들", "schoolyard": "학교 운동장", "gym": "체육관",
+  "belt": "띠, 벨트", "uncle": "삼촌", "uncle's": "삼촌의", "best": "가장 좋은 (best friend 가장 친한 친구)",
+  "new": "새로운", "k-pop": "케이팝", "songs": "노래들", "shoes": "신발", "cake": "케이크",
+  "little": "어린, 작은 (little brother 남동생)", "cute": "귀여운", "haircut": "머리 깎기",
+  "countryside": "시골", "family": "가족", "farm": "농장, 밭", "mountain": "산", "grandpa": "할아버지",
+  "forest": "숲", "grandma": "할머니", "stew": "찌개", "kitchen": "부엌", "fruit": "과일",
+  "parents": "부모님", "lake": "호수", "plane": "비행기", "bulguksa": "불국사", "haeundae": "해운대",
+  "beach": "해변, 해수욕장", "bibimbap": "비빔밥", "roller": "롤러", "coaster": "코스터 (roller coaster 롤러코스터)",
+  "sharks": "상어들", "penguins": "펭귄들", "lions": "사자들", "giraffes": "기린들",
+  "gangneung": "강릉", "warm": "따뜻한", "sea": "바다",
 };
